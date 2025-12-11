@@ -91,9 +91,58 @@ app_ui = ui.page_sidebar(
             box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important; 
             border-radius: 15px !important;
         }
+        /* --- NEW CSS FOR ABOUT SECTION --- */
+        .btn-about {
+            background-color: white;
+            border: 1px solid #ddd;
+            color: #333;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .btn-about:hover {
+            background-color: #f8f9fa;
+            border-color: #ccc;
+        }
+        .author-card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden; 
+            height: 100%;
+        }
+        .author-header {
+            padding: 10px;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+        .author-body {
+            padding: 20px;
+            text-align: center;
+        }
+        /* NEW: Styles for the Author Images */
+        .author-photo {
+            width: 100px; 
+            height: 100px; 
+            border-radius: 50%; 
+            object-fit: cover; /* Ensures image doesn't stretch */
+            border: 4px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            margin: 0 auto 15px auto;
+            display: block;
+        }
     """)),
-    # --- Main Content ---
-    ui.h2("California Road Accidents Dashboard"),
+    # --- Main Header Area with About Button ---
+    ui.div(
+        ui.h2("California Road Accidents Dashboard", class_="mb-0"),
+        ui.input_action_button(
+            "about_btn", 
+            "About", 
+            icon=fa.icon_svg("circle-info"), 
+            class_="btn-about"
+        ),
+        class_="d-flex justify-content-between align-items-center mb-3 mt-2"
+    ),
 
    # --- KPI Row ---
     ui.layout_columns(
@@ -194,6 +243,111 @@ def server(input, output, session):
         # Listen to reset button (dummy dependency for now)
         input.reset_btn() 
         return df
+
+    # --- ABOUT MODAL LOGIC ---
+    @reactive.effect
+    @reactive.event(input.about_btn)
+    def show_about_modal():
+        m = ui.modal(
+            ui.div(
+                # --- Authors Section ---
+                ui.h4("Research Authors", class_="mb-3"),
+                ui.layout_columns(
+                    # Author 1: Khinje (Cyan)
+                    ui.div(
+                        ui.div("Khinje Louis P. Curugan", class_="author-header", style="background-color: #00bcd4;"),
+                        ui.div(
+                            ui.img(src="BSCS3_Khin.jpg", class_="author-photo"),
+                            ui.p("BSCS Student", class_="fw-bold"),
+                            ui.p("University of Southeastern Philippines", class_="small text-muted mb-0"),
+                            ui.p("College of Information and Computing", class_="small text-muted mb-0"),
+                            ui.p("BS Computer Science - Major in Data Science", class_="small text-muted mb-0"),
+                            ui.p("CSDS 313 Business Intelligence [AY 2025-2026]", class_="small text-muted"),
+                            class_="author-body"
+                        ),
+                        class_="author-card"
+                    ),
+                    # Author 2: Rui (Magenta/Red)
+                    ui.div(
+                        ui.div("Rui Manuel A. Palabon", class_="author-header", style="background-color: #c2185b;"),
+                        ui.div(
+                            ui.img(src="BSCS3_Rui.jpg", class_="author-photo"),
+                            ui.p("BSCS Student", class_="fw-bold"),
+                            ui.p("University of Southeastern Philippines", class_="small text-muted mb-0"),
+                            ui.p("College of Information and Computing", class_="small text-muted mb-0"),
+                            ui.p("BS Computer Science - Major in Data Science", class_="small text-muted mb-0"),
+                            ui.p("CSDS 313 Business Intelligence [AY 2025-2026]", class_="small text-muted"),
+                            class_="author-body"
+                        ),
+                        class_="author-card"
+                    ),
+                    # Author 3: Aj Ian (Blue)
+                    ui.div(
+                        ui.div("Aj Ian L. Resurreccion", class_="author-header", style="background-color: #0d6efd;"),
+                        ui.div(
+                            ui.img(src="BSCS3_Ian.jpeg", class_="author-photo"),
+                            ui.p("BSCS Student", class_="fw-bold"),
+                            ui.p("University of Southeastern Philippines", class_="small text-muted mb-0"),
+                            ui.p("College of Information and Computing", class_="small text-muted mb-0"),
+                            ui.p("BS Computer Science - Major in Data Science", class_="small text-muted mb-0"),
+                            ui.p("CSDS 313 Business Intelligence [AY 2025-2026]", class_="small text-muted"),
+                            class_="author-body"
+                        ),
+                        class_="author-card"
+                    ),
+                    col_widths=[4, 4, 4]
+                ),
+                
+                ui.hr(),
+                
+                # --- Dataset Section (Restructured) ---
+                ui.h4("Dataset Information", class_="mb-3"),
+                ui.div(
+                    ui.h5("US-Accidents: A Countrywide Traffic Accident Dataset (2016 - 2023)"),
+                    ui.p("This is a countrywide traffic accident dataset covering 49 states. The data is collected from February 2016 to March 2023 using multiple APIs that provide streaming traffic event data."),
+                    ui.hr(),
+
+                    ui.h6("Acknowledgments & Citations"),
+                    
+                    # Paper 1 Card
+                    ui.div(
+                        ui.strong("Paper 1: A Countrywide Traffic Accident Dataset"),
+                        ui.p("Moosavi, Sobhan, et al., arXiv preprint arXiv:1906.05409 (2019).", class_="text-muted small mb-1"),
+                        ui.a(fa.icon_svg("up-right-from-square"), " https://doi.org/10.48550/arXiv.1906.05409", 
+                             href="https://doi.org/10.48550/arXiv.1906.05409", target="_blank", 
+                             style="color: #0d6efd; text-decoration: none; font-weight: 500;"),
+                        class_="p-3 border rounded mb-2 bg-white"
+                    ),
+
+                    # Paper 2 Card
+                    ui.div(
+                        ui.strong("Paper 2: Accident Risk Prediction based on Heterogeneous Sparse Data"),
+                        ui.p("Moosavi, Sobhan, et al. ACM SIGSPATIAL 2019.", class_="text-muted small mb-1"),
+                        ui.a(fa.icon_svg("up-right-from-square"), " https://doi.org/10.1145/3347146.3359078", 
+                             href="https://doi.org/10.1145/3347146.3359078", target="_blank", 
+                             style="color: #0d6efd; text-decoration: none; font-weight: 500;"),
+                        class_="p-3 border rounded mb-3 bg-white"
+                    ),
+                    
+                    ui.hr(),
+                    ui.h6("Source"),
+                    ui.div(
+                        ui.span("Official Source: ", class_="fw-bold"),
+                        ui.a("smoosavi.org/datasets/us_accidents", href="https://smoosavi.org/datasets/us_accidents", target="_blank", style="text-decoration: underline; color: #0d6efd;"),
+                        ui.br(),
+                        ui.span("Kaggle Repository: ", class_="fw-bold"),
+                        ui.a("Kaggle - US Accidents (2016-2023)", href="https://www.kaggle.com/datasets/sobhanmoosavi/us-accidents", target="_blank", style="text-decoration: underline; color: #0d6efd;"),
+                    ),
+                    
+                    class_="p-3 bg-light border rounded"
+                )
+            ),
+            title="About this Project",
+            size="xl",
+            easy_close=True,
+            footer=ui.modal_button("Close")
+        )
+        ui.modal_show(m)
 
     # --- KPI Calculations ---
     @render.text
@@ -645,7 +799,8 @@ def server(input, output, session):
         
         return fig
 
+static_dir = os.path.join(os.path.dirname(__file__), "assets")
 # Run the App
-app = App(app_ui, server)
+app = App(app_ui, server, static_assets=static_dir)
 
-# version 1.3
+# version 1.6
