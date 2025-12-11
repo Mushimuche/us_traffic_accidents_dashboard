@@ -66,6 +66,8 @@ if df.empty:
 # =============================================================================
 
 app_ui = ui.page_sidebar(
+   
+
     # --- Sidebar ---
     ui.sidebar(
         ui.h4("Filters"),
@@ -74,30 +76,53 @@ app_ui = ui.page_sidebar(
         bg="#f8f9fa"
     ),
 
+     # [CHANGE 1] Add Custom CSS for aesthetic shadows and gradients
+    ui.head_content(ui.tags.style("""
+        .value-box-area { padding: 10px; }
+        .bslib-value-box { 
+            border-radius: 12px !important; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+            border: none !important;
+            transition: transform 0.2s;
+        }
+        .bslib-value-box:hover { transform: translateY(-5px); }
+        .card { 
+            border: none !important; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important; 
+            border-radius: 15px !important;
+        }
+    """)),
     # --- Main Content ---
     ui.h2("California Road Accidents Dashboard"),
 
-    # --- KPI Row ---
+   # --- KPI Row ---
     ui.layout_columns(
         ui.value_box(
             "Total Accidents",
             ui.output_text("kpi_total"),
             showcase=fa.icon_svg("car-burst"),
-            theme="danger"  # Red
+            theme="bg-gradient-red-orange", # Gradient theme
+            full_screen=False,
+            fill=False
         ),
         ui.value_box(
             "Avg Accidents / Day",
             ui.output_text("kpi_daily_avg"),
             showcase=fa.icon_svg("calendar-day"),
-            theme="primary" # Blue
+            theme="bg-gradient-blue-indigo", # Gradient theme
+            full_screen=False,
+            fill=False
         ),
         ui.value_box(
             "Avg Cases / Hour",
             ui.output_text("kpi_hourly_avg"),
-            showcase=fa.icon_svg("clock"),
-            theme="teal"    # Green/Teal
+            showcase=fa.icon_svg("stopwatch"), # Changed icon to stopwatch
+            theme="bg-gradient-teal-green", # Gradient theme
+            full_screen=False,
+            fill=False
         ),
-        fill=False
+        fill=False,
+        class_="value-box-area" # Applies our custom padding
     ),
 
     # --- Tabs ---
@@ -280,38 +305,81 @@ def server(input, output, session):
         return fig
 
     @render_widget # type: ignore
-    def month_plot():
-        data = filtered_df()
-        if data.empty:
-            return go.Figure()
-
-        # Count per month
-        counts = data['Month'].value_counts().reindex(month_order)
-        
-        fig = px.bar(
-            x=counts.index, 
-            y=counts.values,
-            labels={'x': 'Month', 'y': 'Accidents'},
-            color=counts.values,
-            color_continuous_scale='Magma'
-        )
-        return fig
-
-    @render_widget # type: ignore
     def hour_plot():
         data = filtered_df()
+        # FIX: Split into two lines to fix "Multiple statements on one line" error
         if data.empty:
             return go.Figure()
 
-        # Count per hour
+        # 1. Data Preparation
         counts = data['Hour'].value_counts().sort_index()
+        total_accidents = counts.sum()
         
-        fig = px.area(
-            x=counts.index, 
-            y=counts.values,
-            labels={'x': 'Hour of Day (0-23)', 'y': 'Accident Count'},
-            markers=True
+        # Create a temporary dataframe for plotting
+        plot_df = pd.DataFrame({'Hour': counts.index, 'Count': counts.values})
+        plot_df['Percentage'] = (plot_df['Count'] / total_accidents * 100).round(2)
+        
+        # 2. Define Colors based on Time (Morning vs Night)
+        # Logic: 6 AM to 6 PM (18:00) is "Day" (Cyan), else "Night" (Dark Blue)
+        colors = []
+        for h in plot_df['Hour']:
+            if 6 <= h <= 18:
+                colors.append('#26d0ce')  # Cyan/Teal for Morning
+            else:
+                colors.append('#1a2980')  # Dark Blue for Night
+
+        # 3. Build the Combo Chart
+        fig = go.Figure()
+
+        # Add Bar Chart
+        fig.add_trace(go.Bar(
+            x=plot_df['Hour'],
+            y=plot_df['Count'],
+            text=plot_df['Percentage'].apply(lambda x: f"{x}%"), # Add % text
+            textposition='outside', # Text above bar
+            textfont=dict(size=10),
+            marker_color=colors,
+            name="Accidents",
+            showlegend=False
+        ))
+
+        # Add Line Overlay (White line connecting tops)
+        fig.add_trace(go.Scatter(
+            x=plot_df['Hour'],
+            y=plot_df['Count'],
+            mode='lines+markers',
+            line=dict(color='white', width=3, shape='spline'), # Smooth line
+            marker=dict(color='white', size=6, line=dict(width=1, color='#333')),
+            name="Trend",
+            showlegend=False
+        ))
+
+        # 4. Aesthetic Layout
+        fig.update_layout(
+            title="",
+            # Clean White Background
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            # X-Axis configuration
+            xaxis=dict(
+                tickmode='linear', 
+                dtick=1, 
+                title="Hour of Day",
+                showgrid=False,
+                linecolor='#e0e0e0'
+            ),
+            # Y-Axis configuration
+            yaxis=dict(
+                title="Accident Cases",
+                showgrid=True,
+                gridcolor='#f5f5f5',
+                zeroline=False
+            ),
+            margin=dict(l=20, r=20, t=40, b=20),
+            height=500,
+            hovermode="x unified"
         )
+        
         return fig
 
 # Run the App
