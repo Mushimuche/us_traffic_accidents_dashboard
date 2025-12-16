@@ -5,6 +5,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import faicons as fa
 import os
+from sklearn.cluster import KMeans
 
 # =============================================================================
 # 1. DATA LOADING & PREPROCESSING
@@ -216,10 +217,38 @@ app_ui = ui.page_sidebar(
             )
         ),
 
-        # TAB 2: Weather Analysis (Empty for now)
+        # TAB 2: Hotspot Analysis (Updated)
         ui.nav_panel(
-            "Weather Analysis",
-            ui.p("Weather impact analysis coming soon...")
+            "Hotspot Clustering",
+            ui.layout_columns(
+                # Left Sidebar: Controls & Interpretation
+                ui.card(
+                    ui.card_header("Cluster Configuration"),
+                    ui.input_slider("n_clusters", "Number of Zones (K)", min=2, max=10, value=5),
+                    
+                    ui.hr(),
+                    
+                    # New Interpretation Section for Non-Technical Users
+                    ui.h6("How to Read this Map", class_="fw-bold text-primary"),
+                    ui.p("This map uses an algorithm called K-Means to mathematically find 'centers of gravity' for accidents.", class_="small text-muted"),
+                    ui.tags.ul(
+                        ui.tags.li(ui.strong("Colored Zones:"), " Each color represents a distinct geographic cluster of accidents.", class_="small"),
+                        ui.tags.li(ui.strong("Resource Allocation:"), " Agencies can place 1 HQ or Response Team in the center of each color to minimize travel time.", class_="small"),
+                        ui.tags.li(ui.strong("K-Slider:"), " Change the slider to split the state into more specific local zones.", class_="small"),
+                    ),
+                    height="100%"
+                ),
+                
+                # Right Side: The Map
+                ui.card(
+                    ui.card_header("Identified Accident Hotspots"),
+                    # Increased height to 700px for better visibility
+                    output_widget("cluster_map", width="100%", height="600px"),
+                    full_screen=True,
+                    style="padding: 0px;" # Removes padding so map touches edges
+                ),
+                col_widths=[3, 9] 
+            )
         ),
 
         # TAB 3: Prediction (Empty for now)
@@ -799,8 +828,80 @@ def server(input, output, session):
         
         return fig
 
+
+    @render_widget # type: ignore
+    def cluster_map():
+        # 1. Get Data
+        data = filtered_df()
+        if data.empty: 
+            return go.Figure()
+        
+        # Performance & Sampling (Clustering is heavy)
+        cluster_data = data
+        if len(data) > 5000:
+            cluster_data = data.sample(5000, random_state=42)
+            
+        # 2. Prepare Data
+        X = cluster_data[['Start_Lat', 'Start_Lng']]
+        
+        # 3. K-Means Algorithm
+        k = input.n_clusters()
+        # n_init="auto" fixes the warning you saw earlier
+        kmeans = KMeans(n_clusters=k, random_state=42, n_init="auto")
+        
+        cluster_data = cluster_data.copy()
+        labels = kmeans.fit_predict(X)
+        
+        # [FIX] Use List Comprehension to avoid NumPy 'ufunc' string error
+        # This creates a simple list of strings like ["Zone 1", "Zone 2", ...]
+        cluster_data['Cluster Name'] = [f"Zone {i+1}" for i in labels]
+
+        # [FIX] Create a strictly sorted list for the Legend (Zone 1, Zone 2, ... Zone K)
+        sort_order = [f"Zone {i+1}" for i in range(k)]
+        
+        # 4. Professional Aesthetic Map
+        fig = px.scatter_mapbox(
+            cluster_data,
+            lat="Start_Lat",
+            lon="Start_Lng",
+            color="Cluster Name",
+            # [FIX] Force Plotly to use our numerical sort order for the legend
+            category_orders={"Cluster Name": sort_order}, 
+            zoom= 4, # Optimized Zoom for California
+            # Center Coordinates for California
+            center={"lat": 37.0, "lon": -119.5},
+            # High contrast colors for easy distinction
+            color_discrete_sequence=px.colors.qualitative.G10, 
+            mapbox_style="carto-positron",
+            title="",
+            hover_data={
+                "Start_Lat": False, 
+                "Start_Lng": False, 
+                "Cluster Name": True, 
+                "City": True,
+                "Severity": True
+            }
+        )
+        
+        # Clean Layout (Removes whitespace)
+        fig.update_layout(
+            height=600,
+            mapbox_zoom=5,
+            margin={"r":0,"t":0,"l":0,"b":0},
+            legend=dict(
+                yanchor="top", y=0.98,
+                xanchor="left", x=0.02,
+                bgcolor="rgba(255, 255, 255, 0.9)",
+                bordercolor="#ccc",
+                borderwidth=1,
+                # Ensure the items are stacked vertically in the sorted order
+                traceorder="normal"
+            )
+        )
+        return fig
+
 static_dir = os.path.join(os.path.dirname(__file__), "assets")
 # Run the App
 app = App(app_ui, server, static_assets=static_dir)
 
-# version 1.6
+# version 1.7
