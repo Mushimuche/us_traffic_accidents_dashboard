@@ -10,7 +10,7 @@ from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 
-from typing import Any 
+from typing import Any, cast 
 
 # =============================================================================
 # 0. GLOBAL MODEL TRAINING (Runs once on startup)
@@ -122,9 +122,52 @@ app_ui = ui.page_sidebar(
 
     # --- Sidebar ---
     ui.sidebar(
-        ui.h4("Filters"),
-        ui.p("Filter options will be placed here."),
-        ui.input_action_button("reset_btn", "Reset Filters", class_="btn-danger"),
+        ui.h4("Filters", class_="mb-3"),
+        ui.p("Apply filters to Map and Time Analysis tab", class_="small text-muted"),
+        
+        ui.hr(),
+        
+        # Filter 1: Year Range
+        ui.input_slider(
+            "filter_year",
+            "Year Range",
+            min=2016,
+            max=2023,
+            value=[2016, 2023],
+            sep=""
+        ),
+        
+        # Filter 2: Severity Level
+        ui.input_checkbox_group(
+            "filter_severity",
+            "Severity Level",
+            choices={"1": "1 - Minor", "2": "2 - Moderate", "3": "3 - Serious", "4": "4 - Severe"},
+            selected=["1", "2", "3", "4"]
+        ),
+        
+        # Filter 3: Weather Condition
+        ui.input_selectize(
+            "filter_weather",
+            "Weather Condition",
+            choices=[],  # Will be populated dynamically
+            multiple=True,
+            options={"placeholder": "All Weather Conditions"}
+        ),
+        
+        # Filter 4: Time of Day
+        ui.input_slider(
+            "filter_hour",
+            "Hour of Day",
+            min=0,
+            max=23,
+            value=[0, 23],
+            step=1
+        ),
+        
+        ui.hr(),
+        
+        ui.input_action_button("reset_btn", "Reset All Filters", class_="btn-danger w-100"),
+        
         bg="#f8f9fa"
     ),
 
@@ -315,9 +358,19 @@ app_ui = ui.page_sidebar(
             ),
             
             # Row 3: Hourly Trend
-            ui.card(
-                ui.card_header("Accident Frequency by Hour of Day"),
-                output_widget("hour_plot")
+            # Row 3: Hourly Trend and Weather Distribution
+            ui.layout_columns(
+                ui.card(
+                    ui.card_header("Accident Frequency by Hour of Day"),
+                    output_widget("hour_plot"),
+                    full_screen=True
+                ),
+                ui.card(
+                    ui.card_header("Accidents by Weather Condition"),
+                    output_widget("weather_plot"),
+                    full_screen=True
+                ),
+                col_widths=[6, 6]
             )
         ),
 
@@ -436,6 +489,13 @@ app_ui = ui.page_sidebar(
 
 def server(input, output, session):
 
+    # [NEW] Populate weather filter choices dynamically
+    @reactive.effect
+    def _():
+        if not df.empty and 'Weather_Condition' in df.columns:
+            weather_options = sorted(df['Weather_Condition'].dropna().unique().tolist())
+            ui.update_selectize("filter_weather", choices=weather_options)
+
     # [CHANGE] Prediction Logic
     # Adding ': Any' forces the strict checker to allow updates later
     pred_result: Any = reactive.Value(None) 
@@ -532,12 +592,51 @@ def server(input, output, session):
         
         return go.FigureWidget(fig)
     
+    
+
     # Reactive calculation for filtered data
     @reactive.calc
-    def filtered_df():
-        # Listen to reset button (dummy dependency for now)
-        input.reset_btn() 
-        return df
+    def filtered_df() -> pd.DataFrame:
+        # Start with full dataset
+        data: pd.DataFrame = df.copy()
+        
+        if data.empty:
+            return data
+        
+        # Apply Year Filter
+        if 'Year' in data.columns:
+            year_range = input.filter_year()
+            # Only filter if range is not the full default (2016-2023)
+            if year_range[0] != 2016 or year_range[1] != 2023:
+                mask = (data['Year'] >= year_range[0]) & (data['Year'] <= year_range[1])
+                data = cast(pd.DataFrame, data[mask])
+        
+        # Apply Severity Filter (Convert strings back to integers)
+        if 'Severity' in data.columns:
+            selected_severities = input.filter_severity()
+            # Only filter if not all severities are selected
+            if selected_severities and len(selected_severities) < 4:
+                severity_ints = [int(s) for s in selected_severities]
+                mask = data['Severity'].isin(severity_ints)
+                data = cast(pd.DataFrame, data[mask])
+        
+        # Apply Weather Filter
+        if 'Weather_Condition' in data.columns:
+            selected_weather = input.filter_weather()
+            # Only filter if weather conditions are actually selected
+            if selected_weather and len(selected_weather) > 0:
+                mask = data['Weather_Condition'].isin(selected_weather)
+                data = cast(pd.DataFrame, data[mask])
+        
+        # Apply Hour Filter
+        if 'Hour' in data.columns:
+            hour_range = input.filter_hour()
+            # Only filter if range is not the full default (0-23)
+            if hour_range[0] != 0 or hour_range[1] != 23:
+                mask = (data['Hour'] >= hour_range[0]) & (data['Hour'] <= hour_range[1])
+                data = cast(pd.DataFrame, data[mask])
+        
+        return data
 
     # --- ABOUT MODAL LOGIC ---
     @reactive.effect
@@ -643,6 +742,15 @@ def server(input, output, session):
             footer=ui.modal_button("Close")
         )
         ui.modal_show(m)
+
+    # --- RESET FILTER LOGIC ---
+    @reactive.effect
+    @reactive.event(input.reset_btn)
+    def reset_filters():
+        ui.update_slider("filter_year", value=(2016, 2023))  # Changed to tuple
+        ui.update_checkbox_group("filter_severity", selected=["1", "2", "3", "4"])
+        ui.update_selectize("filter_weather", selected=[])
+        ui.update_slider("filter_hour", value=(0, 23))  # Changed to tuple
 
     # --- KPI Calculations ---
     @render.text
@@ -1094,11 +1202,112 @@ def server(input, output, session):
         
         return fig
 
+    @render_widget # type: ignore
+    def weather_plot():
+        data = filtered_df()
+        if data.empty or 'Weather_Condition' not in data.columns:
+            return go.Figure()
+
+        # 1. Data Preparation - Handle Series properly
+        weather_series = data['Weather_Condition'].value_counts()
+        
+        # Convert to DataFrame immediately to avoid type issues
+        weather_df = pd.DataFrame({
+            'Weather': weather_series.index.tolist(),
+            'Count': weather_series.values.tolist()
+        })
+        
+        total = weather_df['Count'].sum()
+        weather_df['Percentage'] = (weather_df['Count'] / total * 100).round(2)
+        
+        # Sort by count descending and take top 15
+        weather_df = weather_df.sort_values('Count', ascending=True).tail(15)
+        
+        # 2. Weather-Themed Color Mapping
+        weather_color_map = {
+            'fair': '#FFD700',
+            'clear': '#87CEEB',
+            'cloudy': '#B0C4DE',
+            'mostly cloudy': '#9CA3AF',
+            'partly cloudy': '#D3D3D3',
+            'overcast': '#708090',
+            'rain': '#4682B4',
+            'light rain': '#6495ED',
+            'heavy rain': '#000080',
+            'snow': '#FFFFFF',
+            'light snow': '#F0F8FF',
+            'heavy snow': '#E6E6FA',
+            'fog': '#DCDCDC',
+            'mist': '#F5F5F5',
+            'haze': '#FFF8DC',
+            'thunderstorm': '#483D8B',
+            'drizzle': '#B0E0E6',
+            'sleet': '#C0C0C0',
+            'wintry mix': '#E0E0E0',
+            'smoke': '#A9A9A9'
+        }
+        
+        # Assign colors based on weather keywords
+        def get_weather_color(weather_name: str) -> str:
+            weather_lower = str(weather_name).lower()
+            for key, color in weather_color_map.items():
+                if key in weather_lower:
+                    return color
+            return '#95A5A6'  # Default gray
+        
+        weather_df['Color'] = weather_df['Weather'].apply(get_weather_color)
+        
+        # 3. Create Modern Horizontal Bar Chart
+        fig = go.Figure()
+        
+        fig.add_trace(go.Bar(
+            x=weather_df['Count'].tolist(),
+            y=weather_df['Weather'].tolist(),
+            orientation='h',
+            text=weather_df['Percentage'].apply(lambda x: f"{x}%").tolist(),
+            textposition='outside',
+            textfont=dict(size=11, color='#555', weight='bold'),
+            marker=dict(
+                color=weather_df['Color'].tolist(),
+                line=dict(color='white', width=1.5),
+                pattern=dict(shape="")
+            ),
+            hovertemplate="<b>%{y}</b><br>" +
+                         "Accidents: %{x:,}<br>" +
+                         "Percentage: %{text}<br>" +
+                         "<extra></extra>",
+            showlegend=False
+        ))
+        
+        # 4. Modern Layout
+        fig.update_layout(
+            title="",
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            xaxis=dict(
+                title=dict(text="Number of Accidents", font=dict(size=12, color='#777')),
+                showgrid=True,
+                gridcolor='#f5f5f5',
+                zeroline=False,
+                tickfont=dict(color='#666')
+            ),
+            yaxis=dict(
+                title=dict(text="Weather Condition", font=dict(size=12, color='#777')),
+                showgrid=False,
+                tickfont=dict(color='#555', size=10)
+            ),
+            margin=dict(l=20, r=80, t=20, b=20),
+            height=400,
+            hovermode="y unified"
+        )
+        
+        return fig
+
 
     @render_widget # type: ignore
     def cluster_map():
         # 1. Get Data
-        data = filtered_df()
+        data = df
         if data.empty: 
             return go.Figure()
         
