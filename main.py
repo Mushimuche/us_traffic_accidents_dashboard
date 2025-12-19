@@ -17,32 +17,39 @@ from typing import Any, cast
 # =============================================================================
 
 print("Initializing Prediction Model...")
-rf_model: Any = None # <--- CHANGE THIS LINE (Added : Any)
+rf_model: Any = None 
 le_weather = LabelEncoder()
 unique_weather_options = ["Clear", "Rain", "Snow", "Fog", "Overcast"] # Default fallback
 
+# [CHANGE] Exact filename from your screenshot
+training_file_path = "us_accidents_ca_balanced.csv"
+
 try:
-    if os.path.exists("us_accidents_ca_only.csv"):
+    if os.path.exists(training_file_path):
+        print(f"Loading balanced training data from: {training_file_path}")
+        
         # Load necessary columns for training
         train_cols = ['Severity', 'Start_Time', 'Weather_Condition', 'Temperature(F)', 
                     'Humidity(%)', 'Traffic_Signal', 'Junction', 'Crossing']
         
-        # Read sample (10k rows is enough for a demo)
-        df_train = pd.read_csv("us_accidents_ca_only.csv", usecols=lambda c: c in train_cols)
-        df_train = df_train.sample(n=min(10000, len(df_train)), random_state=42)
+        # [CHANGE] Read the balanced dataset
+        # Your screenshot shows ~17k rows. We use the full dataset here for maximum accuracy.
+        df_train = pd.read_csv(training_file_path, usecols=lambda c: c in train_cols)
         
         # Preprocessing
         df_train['Start_Time'] = pd.to_datetime(df_train['Start_Time'], errors='coerce')
         df_train['Hour'] = df_train['Start_Time'].dt.hour
+        
+        # Handle Missing Values (Imputation specific to the balanced set)
         df_train['Weather_Condition'] = df_train['Weather_Condition'].fillna('Clear')
-        df_train['Temperature(F)'] = df_train['Temperature(F)'].fillna(60)
-        df_train['Humidity(%)'] = df_train['Humidity(%)'].fillna(50)
+        # Use median for numerical columns to handle outliers better
+        df_train['Temperature(F)'] = df_train['Temperature(F)'].fillna(df_train['Temperature(F)'].median())
+        df_train['Humidity(%)'] = df_train['Humidity(%)'].fillna(df_train['Humidity(%)'].median())
         
         # Encode Weather
         df_train['Weather_Encoded'] = le_weather.fit_transform(df_train['Weather_Condition'].astype(str))
         
-        # [FIX] Safely access classes_ using getattr to satisfy strict type checker
-        # This defaults to [] if classes_ is missing, preventing the "None" error
+        # Update dropdown options based on what the model learned from the balanced data
         weather_classes = getattr(le_weather, 'classes_', [])
         unique_weather_options = sorted([str(x) for x in weather_classes])
         
@@ -52,9 +59,14 @@ try:
         y = df_train['Severity']
         
         # Train Model
-        rf_model = RandomForestClassifier(n_estimators=50, max_depth=10, random_state=42)
+        # [CHANGE] Increased n_estimators to 100 since we have a clean, balanced dataset
+        rf_model = RandomForestClassifier(n_estimators=100, max_depth=12, random_state=42)
         rf_model.fit(X, y)
-        print("Prediction Model Trained Successfully.")
+        print(f"Prediction Model Trained Successfully using {len(df_train)} balanced records.")
+        
+    else:
+        print(f"Warning: '{training_file_path}' not found. Prediction model will not work.")
+
 except Exception as e:
     print(f"Model training failed: {e}")
 
