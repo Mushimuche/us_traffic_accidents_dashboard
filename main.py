@@ -125,7 +125,7 @@ app_ui = ui.page_sidebar(
         
         ui.h4("Filters", class_="mb-3"),
         ui.p("Apply filters to Map and Time Analysis tab", class_="small text-muted"),
-        
+
         ui.hr(),
         
         # Filter 1: Year Range
@@ -174,398 +174,807 @@ app_ui = ui.page_sidebar(
 
      # [CHANGE 1] Add Custom CSS for aesthetic shadows and gradients
     ui.head_content(ui.tags.style("""
-        .value-box-area { padding: 10px; }
-        .bslib-value-box { 
-            border-radius: 12px !important; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
-            border: none !important;
-            transition: transform 0.2s;
-        }
-        .bslib-value-box:hover { transform: translateY(-5px); }
-        .card { 
-            border: none !important; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important; 
-            border-radius: 15px !important;
-        }
-        /* --- NEW CSS FOR ABOUT SECTION --- */
-        .btn-about {
-            background-color: white;
-            border: 1px solid #ddd;
-            color: #333;
-            font-weight: 500;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .btn-about:hover {
-            background-color: #f8f9fa;
-            border-color: #ccc;
-        }
-        .author-card {
-            background: #fff;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            overflow: hidden; 
-            height: 100%;
-        }
-        .author-header {
-            padding: 10px;
-            color: white;
-            font-weight: bold;
-            text-align: center;
-        }
-        .author-body {
-            padding: 20px;
-            text-align: center;
-        }
-        /* NEW: Styles for the Author Images */
-        .author-photo {
-            width: 100px; 
-            height: 100px; 
-            border-radius: 50%; 
-            object-fit: cover; /* Ensures image doesn't stretch */
-            border: 4px solid white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            margin: 0 auto 15px auto;
-            display: block;
-        }
+        /* ============================================================
+            GLOBAL THEME - Traffic Safety Inspired
+            ============================================================ */
 
-        /* --- SEVERITY PREDICTOR STYLES --- */
-        .pred-container {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border-radius: 20px;
-            padding: 20px;
-        }
-        .input-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.5);
-            border-radius: 15px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-        }
-        .result-card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-            text-align: center;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .sev-number {
-            font-size: 5rem;
-            font-weight: 800;
-            background: -webkit-linear-gradient(45deg, #FF512F, #DD2476);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .sev-label {
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #888;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        .btn-predict {
-            background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%);
-            border: none;
-            color: white;
-            padding: 12px;
-            font-weight: bold;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-        .btn-predict:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(24, 40, 72, 0.3);
-        }
+            /* Main Background - Gradient inspired by warning road signs */
+            body, .bslib-page-sidebar {
+                background: linear-gradient(135deg, #1a1a1a 0%, #2d1b1b 25%, #3d2020 50%, #2d1b1b 75%, #1a1a1a 100%) !important;
+                background-attachment: fixed !important;
+            }
 
-        /* ========== MODERN SIDEBAR STYLES (ENHANCED) ========== */
-        
-        /* Sidebar Container - Force Override */
-        aside[class*="bslib-sidebar"],
-        .bslib-sidebar-layout > .sidebar,
-        div.sidebar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            border-radius: 20px !important;
-            padding: 25px 20px !important;
-            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3) !important;
-            border: none !important;
-        }
-        
-        /* Sidebar Headings */
-        aside h4,
-        .sidebar h4 {
-            color: white !important;
-            font-weight: 700 !important;
-            letter-spacing: 1px !important;
-            text-transform: uppercase !important;
-            font-size: 1.1rem !important;
-            margin-bottom: 10px !important;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
-        }
-        
-        /* Sidebar Small Text */
-        aside p.small,
-        .sidebar p.small,
-        aside .text-muted,
-        .sidebar .text-muted {
-            color: rgba(255, 255, 255, 0.9) !important;
-            font-size: 0.85rem !important;
-        }
-        
-        /* Sidebar HR */
-        aside hr,
-        .sidebar hr {
-            border-color: rgba(255, 255, 255, 0.3) !important;
-            margin: 20px 0 !important;
-            opacity: 1 !important;
-        }
-        
-        /* All Labels in Sidebar */
-        aside label,
-        .sidebar label,
-        aside .control-label,
-        .sidebar .control-label {
-            color: white !important;
-            font-weight: 600 !important;
-            font-size: 0.95rem !important;
-            margin-bottom: 10px !important;
-            display: block !important;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
-        }
+            /* Page Content Container */
+            .container-fluid, main {
+                background: transparent !important;
+            }
 
-        /* Center Severity Level Label Specifically */
-        aside #filter_severity-label,
-        .sidebar #filter_severity-label,
-        aside label[for="filter_severity"],
-        .sidebar label[for="filter_severity"] {
-            text-align: center !important;
-            display: block !important;
-            width: 100% !important;
-        }
-        
-        /* Slider Container */
-        aside .form-group,
-        .sidebar .form-group {
-            margin-bottom: 25px !important;
-        }
-        
-        /* Ion Range Slider Styling */
-        aside .irs,
-        .sidebar .irs {
-            margin-top: 15px !important;
-        }
-        
-        aside .irs-bar,
-        .sidebar .irs-bar {
-            background: white !important;
-            border: none !important;
-        }
-        
-        aside .irs-from,
-        aside .irs-to,
-        aside .irs-single,
-        .sidebar .irs-from,
-        .sidebar .irs-to,
-        .sidebar .irs-single {
-            background: white !important;
-            color: #667eea !important;
-            font-weight: 600 !important;
-            border-radius: 6px !important;
-        }
-        
-        aside .irs-handle,
-        .sidebar .irs-handle {
-            background: white !important;
-            border: 3px solid #ffffff !important;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.3) !important;
-            width: 20px !important;
-            height: 20px !important;
-            top: 22px !important;
-        }
-        
-        aside .irs-line,
-        .sidebar .irs-line {
-            background: rgba(255, 255, 255, 0.3) !important;
-            border: none !important;
-        }
-        
-        aside .irs-min,
-        aside .irs-max,
-        .sidebar .irs-min,
-        .sidebar .irs-max {
-            color: rgba(255, 255, 255, 0.8) !important;
-            background: transparent !important;
-        }
-        
-        /* Checkbox Group */
-        aside .checkbox,
-        .sidebar .checkbox {
-            margin: 8px 0 !important;
-        }
-        
-        aside .checkbox label,
-        .sidebar .checkbox label {
-            color: white !important;
-            padding: 10px 7px !important;
-            margin: 0 !important;
-            border-radius: 10px !important;
-            transition: all 0.3s ease !important;
-            background: rgba(255, 255, 255, 0.15) !important;
-            backdrop-filter: blur(10px) !important;
-            display: block !important;
-            cursor: pointer !important;
-            word-wrap: break-word !important;
-            white-space: normal !important;
-            line-height: 1.3 !important;
-            min-height: 48px !important;
-        }
-        
-        aside .checkbox label:hover,
-        .sidebar .checkbox label:hover {
-            background: rgba(255, 255, 255, 0.25) !important;
-            transform: translateX(5px) !important;
-        }
-        
-        aside .checkbox input[type="checkbox"],
-        .sidebar .checkbox input[type="checkbox"] {
-            margin-right: 10px !important;
-        }
-        
-        /* Selectize Dropdown */
-        aside .selectize-control,
-        .sidebar .selectize-control {
-            margin-top: 10px !important;
-        }
-        
-        aside .selectize-input,
-        .sidebar .selectize-input {
-            background: rgba(255, 255, 255, 0.95) !important;
-            border: 2px solid rgba(255, 255, 255, 0.4) !important;
-            border-radius: 10px !important;
-            padding: 10px 12px !important;
-            color: #667eea !important;
-            font-weight: 500 !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
-            min-height: 42px !important;
-            max-height: 120px !important;
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-        }
-        
-        aside .selectize-input input,
-        .sidebar .selectize-input input {
-            color: #667eea !important;
-        }
-        
-        aside .selectize-input.focus,
-        .sidebar .selectize-input.focus {
-            border-color: white !important;
-            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3) !important;
-        }
+            /* ============================================================
+            HEADER STYLING
+            ============================================================ */
 
-        /* Custom Scrollbar for Weather Dropdown */
-        aside .selectize-input::-webkit-scrollbar,
-        .sidebar .selectize-input::-webkit-scrollbar {
-            width: 6px !important;
-        }
-        
-        aside .selectize-input::-webkit-scrollbar-track,
-        .sidebar .selectize-input::-webkit-scrollbar-track {
-            background: rgba(102, 126, 234, 0.1) !important;
-            border-radius: 10px !important;
-        }
-        
-        aside .selectize-input::-webkit-scrollbar-thumb,
-        .sidebar .selectize-input::-webkit-scrollbar-thumb {
-            background: rgba(102, 126, 234, 0.4) !important;
-            border-radius: 10px !important;
-        }
-        
-        aside .selectize-input::-webkit-scrollbar-thumb:hover,
-        .sidebar .selectize-input::-webkit-scrollbar-thumb:hover {
-            background: rgba(102, 126, 234, 0.6) !important;
-        }
-        
-        aside .selectize-dropdown,
-        .sidebar .selectize-dropdown {
-            background: white !important;
-            border: none !important;
-            border-radius: 10px !important;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2) !important;
-            margin-top: 5px !important;
-        }
-        
-        aside .selectize-dropdown-content,
-        .sidebar .selectize-dropdown-content {
-            padding: 5px !important;
-        }
-        
-        aside .selectize-dropdown .option,
-        .sidebar .selectize-dropdown .option {
-            padding: 10px 12px !important;
-            border-radius: 6px !important;
-            color: #667eea !important;
-        }
-        
-        aside .selectize-dropdown .option:hover,
-        aside .selectize-dropdown .option.active,
-        .sidebar .selectize-dropdown .option:hover,
-        .sidebar .selectize-dropdown .option.active {
-            background: rgba(102, 126, 234, 0.1) !important;
-        }
-        
-        /* Reset Button */
-        aside .btn-danger,
-        .sidebar .btn-danger {
-            background: rgba(255, 255, 255, 0.2) !important;
-            backdrop-filter: blur(10px) !important;
-            border: 2px solid rgba(255, 255, 255, 0.5) !important;
-            color: white !important;
-            font-weight: 700 !important;
-            letter-spacing: 0.5px !important;
-            padding: 14px 20px !important;
-            border-radius: 12px !important;
-            transition: all 0.3s ease !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
-            text-transform: uppercase !important;
-            font-size: 0.9rem !important;
-        }
-        
-        aside .btn-danger:hover,
-        .sidebar .btn-danger:hover {
-            background: rgba(255, 255, 255, 0.3) !important;
-            border-color: white !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.2) !important;
-        }
-        
-        aside .btn-danger:active,
-        .sidebar .btn-danger:active {
-            transform: translateY(0px) !important;
-        }
+            h2 {
+                color: #fff !important;
+                font-weight: 800 !important;
+                text-shadow: 0 0 20px rgba(255, 87, 34, 0.5), 0 0 40px rgba(255, 193, 7, 0.3) !important;
+                letter-spacing: 1px !important;
+                font-size: 2rem !important;
+            }
 
-        /* Style for selected items in dropdown */
-        aside .selectize-input .item,
-        .sidebar .selectize-input .item {
-            background: rgba(102, 126, 234, 0.9) !important;
-            color: white !important;
-            padding: 4px 8px !important;
-            margin: 2px 4px 2px 0 !important;
-            border-radius: 6px !important;
-            display: inline-block !important;
-            font-size: 0.85rem !important;
-            line-height: 1.2 !important;
-        }
-        
-        aside .selectize-input .item .remove,
-        .sidebar .selectize-input .item .remove {
-            border-left: 1px solid rgba(255, 255, 255, 0.3) !important;
-            padding-left: 6px !important;
-            margin-left: 6px !important;
-        }
+            /* About Button Styling */
+            .btn-about {
+                background: linear-gradient(135deg, #FF5722 0%, #FF9800 100%) !important;
+                border: 2px solid rgba(255, 255, 255, 0.3) !important;
+                color: white !important;
+                font-weight: 600 !important;
+                box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4) !important;
+                transition: all 0.3s ease !important;
+                padding: 10px 20px !important;
+                border-radius: 10px !important;
+            }
 
+            .btn-about:hover {
+                transform: translateY(-3px) !important;
+                box-shadow: 0 6px 25px rgba(255, 87, 34, 0.6) !important;
+                border-color: rgba(255, 255, 255, 0.6) !important;
+            }
+
+            /* ============================================================
+            VALUE BOXES (KPIs)
+            ============================================================ */
+
+            .value-box-area { 
+                padding: 15px; 
+            }
+
+            .bslib-value-box { 
+                border-radius: 20px !important;
+                background: rgba(255, 255, 255, 0.05) !important;
+                backdrop-filter: blur(20px) !important;
+                border: 2px solid rgba(255, 255, 255, 0.1) !important;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 
+                            inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                overflow: hidden !important;
+                position: relative !important;
+            }
+
+            .bslib-value-box::before {
+                content: '' !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: -100% !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent) !important;
+                transition: left 0.5s !important;
+            }
+
+            .bslib-value-box:hover {
+                transform: translateY(-8px) scale(1.02) !important;
+                box-shadow: 0 12px 40px rgba(255, 87, 34, 0.4),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+                border-color: rgba(255, 152, 0, 0.5) !important;
+            }
+
+            .bslib-value-box:hover::before {
+                left: 100% !important;
+            }
+
+            /* Value Box Text Styling */
+            .bslib-value-box .value-box-title {
+                color: rgba(255, 255, 255, 0.9) !important;
+                font-weight: 600 !important;
+                font-size: 0.95rem !important;
+                text-transform: uppercase !important;
+                letter-spacing: 1.5px !important;
+            }
+
+            .bslib-value-box .value-box-value {
+                color: #fff !important;
+                font-weight: 800 !important;
+                font-size: 2.5rem !important;
+                text-shadow: 0 2px 10px rgba(255, 87, 34, 0.3) !important;
+            }
+
+            /* ============================================================
+            CARDS & PANELS
+            ============================================================ */
+
+            .card {
+                background: rgba(255, 255, 255, 0.03) !important;
+                backdrop-filter: blur(20px) !important;
+                border: 2px solid rgba(255, 255, 255, 0.08) !important;
+                border-radius: 20px !important;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+                transition: all 0.3s ease !important;
+                overflow: hidden !important;
+            }
+
+            .card:hover {
+                box-shadow: 0 12px 40px rgba(255, 87, 34, 0.2) !important;
+            }
+
+            .card-header {
+                background: linear-gradient(135deg, rgba(255, 87, 34, 0.2) 0%, rgba(255, 152, 0, 0.15) 100%) !important;
+                border-bottom: 2px solid rgba(255, 152, 0, 0.3) !important;
+                color: #fff !important;
+                font-weight: 700 !important;
+                font-size: 1.1rem !important;
+                letter-spacing: 0.5px !important;
+                padding: 15px 20px !important;
+                text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+            }
+
+            /* Nav Tabs Styling */
+            .nav-tabs {
+                border-bottom: 2px solid rgba(255, 152, 0, 0.3) !important;
+                background: rgba(0, 0, 0, 0.2) !important;
+                padding: 10px 10px 0 10px !important;
+                border-radius: 15px 15px 0 0 !important;
+            }
+
+            .nav-tabs .nav-link {
+                color: rgba(255, 255, 255, 0.7) !important;
+                border: none !important;
+                border-radius: 10px 10px 0 0 !important;
+                padding: 12px 24px !important;
+                font-weight: 600 !important;
+                transition: all 0.3s ease !important;
+                margin-right: 5px !important;
+                background: transparent !important;
+            }
+
+            .nav-tabs .nav-link:hover {
+                color: #FF9800 !important;
+                background: rgba(255, 152, 0, 0.1) !important;
+                transform: translateY(-2px) !important;
+            }
+
+            .nav-tabs .nav-link.active {
+                color: #fff !important;
+                background: linear-gradient(135deg, #FF5722 0%, #FF9800 100%) !important;
+                border: none !important;
+                box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4) !important;
+            }
+
+            /* ============================================================
+            SEVERITY PREDICTOR SECTION
+            ============================================================ */
+
+            .pred-container {
+                background: linear-gradient(135deg, 
+                    rgba(255, 87, 34, 0.1) 0%, 
+                    rgba(255, 152, 0, 0.05) 50%,
+                    rgba(255, 193, 7, 0.1) 100%) !important;
+                border-radius: 25px !important;
+                padding: 30px !important;
+                border: 2px solid rgba(255, 152, 0, 0.2) !important;
+                box-shadow: inset 0 0 30px rgba(255, 87, 34, 0.1) !important;
+            }
+
+            .input-card {
+                background: rgba(255, 255, 255, 0.05) !important;
+                backdrop-filter: blur(15px) !important;
+                border: 2px solid rgba(255, 255, 255, 0.1) !important;
+                border-radius: 18px !important;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+                transition: all 0.3s ease !important;
+            }
+
+            .input-card:hover {
+                border-color: rgba(255, 152, 0, 0.3) !important;
+                box-shadow: 0 10px 35px rgba(255, 87, 34, 0.2) !important;
+            }
+
+            .input-card h6 {
+                color: #FF9800 !important;
+                text-shadow: 0 2px 8px rgba(255, 152, 0, 0.3) !important;
+            }
+
+            .input-card label {
+                color: rgba(255, 255, 255, 0.9) !important;
+                font-weight: 600 !important;
+            }
+
+            .input-card .form-control,
+            .input-card .form-select {
+                background: rgba(255, 255, 255, 0.08) !important;
+                border: 1px solid rgba(255, 152, 0, 0.3) !important;
+                color: #fff !important;
+                border-radius: 10px !important;
+                transition: all 0.3s ease !important;
+            }
+
+            .input-card .form-control:focus,
+            .input-card .form-select:focus {
+                background: rgba(255, 255, 255, 0.12) !important;
+                border-color: #FF9800 !important;
+                box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2) !important;
+                color: #fff !important;
+            }
+
+            .result-card {
+                background: rgba(255, 255, 255, 0.05) !important;
+                backdrop-filter: blur(20px) !important;
+                border: 2px solid rgba(255, 152, 0, 0.3) !important;
+                border-radius: 20px !important;
+                box-shadow: 0 10px 40px rgba(255, 87, 34, 0.3),
+                            inset 0 0 30px rgba(255, 152, 0, 0.1) !important;
+                padding: 30px !important;
+            }
+
+            .sev-number {
+                font-size: 6rem !important;
+                font-weight: 900 !important;
+                background: linear-gradient(45deg, #FF5722, #FF9800, #FFC107) !important;
+                -webkit-background-clip: text !important;
+                -webkit-text-fill-color: transparent !important;
+                background-clip: text !important;
+                filter: drop-shadow(0 0 20px rgba(255, 152, 0, 0.5)) !important;
+                animation: pulse-glow 2s infinite !important;
+            }
+
+            @keyframes pulse-glow {
+                0%, 100% { filter: drop-shadow(0 0 20px rgba(255, 152, 0, 0.5)); }
+                50% { filter: drop-shadow(0 0 40px rgba(255, 87, 34, 0.8)); }
+            }
+
+            .sev-label {
+                color: rgba(255, 255, 255, 0.8) !important;
+                font-weight: 700 !important;
+                letter-spacing: 3px !important;
+                font-size: 1rem !important;
+            }
+
+            .btn-predict {
+                background: linear-gradient(135deg, #FF5722 0%, #FF9800 50%, #FFC107 100%) !important;
+                border: none !important;
+                color: white !important;
+                padding: 15px !important;
+                font-weight: 700 !important;
+                font-size: 1.1rem !important;
+                border-radius: 12px !important;
+                letter-spacing: 1px !important;
+                text-transform: uppercase !important;
+                box-shadow: 0 6px 20px rgba(255, 87, 34, 0.4) !important;
+                transition: all 0.3s ease !important;
+                position: relative !important;
+                overflow: hidden !important;
+            }
+
+            .btn-predict::before {
+                content: '' !important;
+                position: absolute !important;
+                top: 50% !important;
+                left: 50% !important;
+                width: 0 !important;
+                height: 0 !important;
+                border-radius: 50% !important;
+                background: rgba(255, 255, 255, 0.3) !important;
+                transform: translate(-50%, -50%) !important;
+                transition: width 0.6s, height 0.6s !important;
+            }
+
+            .btn-predict:hover::before {
+                width: 300px !important;
+                height: 300px !important;
+            }
+
+            .btn-predict:hover {
+                transform: translateY(-3px) !important;
+                box-shadow: 0 8px 30px rgba(255, 87, 34, 0.6) !important;
+            }
+
+            /* ============================================================
+            SIDEBAR STYLING - Enhanced
+            ============================================================ */
+
+            aside[class*="bslib-sidebar"],
+            .bslib-sidebar-layout > .sidebar,
+            div.sidebar {
+                background: linear-gradient(135deg, #D32F2F 0%, #F57C00 50%, #FFA000 100%) !important;
+                border-radius: 25px !important;
+                padding: 30px 25px !important;
+                box-shadow: 0 10px 40px rgba(211, 47, 47, 0.4),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+                border: 2px solid rgba(255, 255, 255, 0.2) !important;
+                position: relative !important;
+                overflow: hidden !important;
+
+                /* NEW: Add these lines */
+                max-height: 90vh !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+            }
+
+            aside::before,
+            .sidebar::before {
+                content: '' !important;
+                position: absolute !important;
+                top: -50% !important;
+                left: -50% !important;
+                width: 200% !important;
+                height: 200% !important;
+                background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%) !important;
+                animation: rotate-gradient 10s linear infinite !important;
+                pointer-events: none !important;
+            }
+
+            @keyframes rotate-gradient {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
+            aside h4,
+            .sidebar h4 {
+                color: white !important;
+                font-weight: 800 !important;
+                letter-spacing: 2px !important;
+                text-transform: uppercase !important;
+                font-size: 1.2rem !important;
+                text-shadow: 0 3px 10px rgba(0, 0, 0, 0.3) !important;
+                position: relative !important;
+                z-index: 1 !important;
+            }
+
+            aside p.small,
+            .sidebar p.small {
+                color: rgba(255, 255, 255, 0.95) !important;
+                font-size: 0.85rem !important;
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+            }
+
+            aside hr,
+            .sidebar hr {
+                border-color: rgba(255, 255, 255, 0.4) !important;
+                margin: 25px 0 !important;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+            }
+
+            aside label,
+            .sidebar label {
+                color: white !important;
+                font-weight: 700 !important;
+                font-size: 1rem !important;
+                text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3) !important;
+                letter-spacing: 0.5px !important;
+            }
+
+            /* Slider Styling */
+            aside .irs-bar,
+            .sidebar .irs-bar {
+                background: linear-gradient(90deg, #FFF, #FFC107) !important;
+                border: none !important;
+                height: 6px !important;
+                box-shadow: 0 2px 8px rgba(255, 193, 7, 0.5) !important;
+            }
+
+            aside .irs-handle,
+            .sidebar .irs-handle {
+                background: white !important;
+                border: 4px solid #FFC107 !important;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+                width: 24px !important;
+                height: 24px !important;
+                cursor: pointer !important;
+                transition: all 0.3s ease !important;
+            }
+
+            aside .irs-handle:hover,
+            .sidebar .irs-handle:hover {
+                transform: scale(1.2) !important;
+                box-shadow: 0 6px 20px rgba(255, 193, 7, 0.6) !important;
+            }
+
+            aside .irs-from, aside .irs-to, aside .irs-single,
+            .sidebar .irs-from, .sidebar .irs-to, .sidebar .irs-single {
+                background: white !important;
+                color: #D32F2F !important;
+                font-weight: 700 !important;
+                border-radius: 8px !important;
+                padding: 5px 10px !important;
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3) !important;
+            }
+
+            aside .irs-line,
+            .sidebar .irs-line {
+                background: rgba(255, 255, 255, 0.4) !important;
+                height: 6px !important;
+                border-radius: 3px !important;
+            }
+
+           /* Checkbox Group - Fixed Width & Overflow */
+            aside .checkbox label,
+            .sidebar .checkbox label {
+                background: rgba(255, 255, 255, 0.2) !important;
+                backdrop-filter: blur(10px) !important;
+                padding: 10px 15px !important;
+                border-radius: 12px !important;
+                transition: all 0.3s ease !important;
+                border: 2px solid transparent !important;
+                cursor: pointer !important;
+                display: block !important;
+                width: 100% !important;
+                margin-bottom: 8px !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+            }
+
+            aside .checkbox label:hover,
+            .sidebar .checkbox label:hover {
+                background: rgba(255, 255, 255, 0.3) !important;
+                transform: translateX(8px) !important;
+                border-color: rgba(255, 255, 255, 0.5) !important;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+            }
+
+            aside .checkbox input[type="checkbox"]:checked + span,
+            .sidebar .checkbox input[type="checkbox"]:checked + span {
+                font-weight: 800 !important;
+            }
+
+            /* Selectize Dropdown - Fixed Height & Scrollable */
+            aside .selectize-input,
+            .sidebar .selectize-input {
+                background: rgba(255, 255, 255, 0.95) !important;
+                border: 2px solid rgba(255, 193, 7, 0.5) !important;
+                border-radius: 12px !important;
+                padding: 12px 15px !important;
+                color: #D32F2F !important;
+                font-weight: 600 !important;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+                transition: all 0.3s ease !important;
+                max-height: 120px !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 5px !important;
+            }
+
+            aside .selectize-input.focus,
+            .sidebar .selectize-input.focus {
+                border-color: #FFC107 !important;
+                box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.3),
+                            0 4px 15px rgba(0, 0, 0, 0.2) !important;
+            }
+
+            aside .selectize-input .item,
+            .sidebar .selectize-input .item {
+                background: linear-gradient(135deg, #D32F2F, #F57C00) !important;
+                color: white !important;
+                padding: 6px 10px !important;
+                border-radius: 8px !important;
+                font-weight: 600 !important;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+                white-space: nowrap !important;
+                font-size: 0.85rem !important;
+            }
+
+            /* Reset Button */
+            aside .btn-danger,
+            .sidebar .btn-danger {
+                background: rgba(255, 255, 255, 0.25) !important;
+                backdrop-filter: blur(15px) !important;
+                border: 3px solid rgba(255, 255, 255, 0.6) !important;
+                color: white !important;
+                font-weight: 800 !important;
+                letter-spacing: 1.5px !important;
+                padding: 16px 20px !important;
+                border-radius: 15px !important;
+                text-transform: uppercase !important;
+                font-size: 1rem !important;
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+                transition: all 0.3s ease !important;
+                position: relative !important;
+                overflow: hidden !important;
+            }
+
+            aside .btn-danger::before,
+            .sidebar .btn-danger::before {
+                content: '' !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: -100% !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: rgba(255, 255, 255, 0.2) !important;
+                transition: left 0.5s !important;
+            }
+
+            aside .btn-danger:hover::before,
+            .sidebar .btn-danger:hover::before {
+                left: 100% !important;
+            }
+
+            aside .btn-danger:hover,
+            .sidebar .btn-danger:hover {
+                background: rgba(255, 255, 255, 0.35) !important;
+                border-color: white !important;
+                transform: translateY(-3px) scale(1.02) !important;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+            }
+
+            /* ============================================================
+            AUTHOR CARDS (About Modal)
+            ============================================================ */
+
+            .author-card {
+                background: rgba(255, 255, 255, 0.05) !important;
+                backdrop-filter: blur(15px) !important;
+                border: 2px solid rgba(255, 152, 0, 0.3) !important;
+                border-radius: 15px !important;
+                overflow: hidden !important;
+                transition: all 0.3s ease !important;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+            }
+
+            .author-card:hover {
+                transform: translateY(-8px) !important;
+                box-shadow: 0 12px 35px rgba(255, 87, 34, 0.3) !important;
+                border-color: rgba(255, 152, 0, 0.6) !important;
+            }
+
+            .author-header {
+                padding: 15px !important;
+                color: white !important;
+                font-weight: 800 !important;
+                text-align: center !important;
+                text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+                letter-spacing: 0.5px !important;
+            }
+
+            .author-body {
+                padding: 25px !important;
+                text-align: center !important;
+                background: rgba(255, 255, 255, 0.02) !important;
+            }
+
+            .author-photo {
+                width: 110px !important;
+                height: 110px !important;
+                border-radius: 50% !important;
+                object-fit: cover !important;
+                border: 5px solid white !important;
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+                margin: 0 auto 20px auto !important;
+                display: block !important;
+                transition: all 0.3s ease !important;
+            }
+
+            .author-card:hover .author-photo {
+                transform: scale(1.1) rotate(5deg) !important;
+                box-shadow: 0 8px 30px rgba(255, 152, 0, 0.5) !important;
+            }
+
+            /* ============================================================
+            MODAL STYLING
+            ============================================================ */
+
+            .modal-content {
+                background: linear-gradient(135deg, #1a1a1a 0%, #2d1b1b 100%) !important;
+                border: 2px solid rgba(255, 152, 0, 0.3) !important;
+                border-radius: 20px !important;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+            }
+
+            .modal-header {
+                border-bottom: 2px solid rgba(255, 152, 0, 0.3) !important;
+                background: linear-gradient(135deg, rgba(255, 87, 34, 0.2), rgba(255, 152, 0, 0.15)) !important;
+            }
+
+            .modal-title {
+                color: #fff !important;
+                font-weight: 800 !important;
+                text-shadow: 0 2px 10px rgba(255, 152, 0, 0.5) !important;
+            }
+
+            .modal-body {
+                color: rgba(255, 255, 255, 0.9) !important;
+            }
+
+            .modal-body p {
+                color: rgba(255, 255, 255, 0.85) !important;
+            }
+
+            .modal-body a {
+                color: #FFC107 !important;
+                text-decoration: underline !important;
+            }
+
+            .modal-body a:hover {
+                color: #FF9800 !important;
+            }
+
+            .modal-body h4, .modal-body h5, .modal-body h6 {
+                color: #FF9800 !important;
+                text-shadow: 0 2px 8px rgba(255, 152, 0, 0.3) !important;
+            }
+
+            .modal-body .bg-white {
+                background: rgba(255, 255, 255, 0.1) !important;
+                backdrop-filter: blur(10px) !important;
+                border: 1px solid rgba(255, 152, 0, 0.3) !important;
+            }
+
+            .modal-body .bg-white p {
+                color: rgba(255, 255, 255, 0.9) !important;
+            }
+
+            .modal-body .bg-light {
+                background: rgba(255, 255, 255, 0.08) !important;
+                backdrop-filter: blur(10px) !important;
+            }
+
+            .modal-footer .btn {
+                background: linear-gradient(135deg, #FF5722, #FF9800) !important;
+                border: none !important;
+                color: white !important;
+                font-weight: 600 !important;
+            }
+
+            /* ============================================================
+            SCROLLBAR STYLING
+            ============================================================ */
+
+            ::-webkit-scrollbar {
+                width: 12px !important;
+                height: 12px !important;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: rgba(0, 0, 0, 0.2) !important;
+                border-radius: 10px !important;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: linear-gradient(135deg, #FF5722, #FF9800) !important;
+                border-radius: 10px !important;
+                border: 2px solid rgba(0, 0, 0, 0.2) !important;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: linear-gradient(135deg, #D32F2F, #F57C00) !important;
+            }
+
+            /* ============================================================
+            UTILITY CLASSES
+            ============================================================ */
+
+            .text-primary {
+                color: #FF9800 !important;
+            }
+
+            .text-muted {
+                color: rgba(255, 255, 255, 0.6) !important;
+            }
+
+            .bg-light {
+                background: rgba(255, 255, 255, 0.05) !important;
+                backdrop-filter: blur(10px) !important;
+            }
+
+            .border {
+                border-color: rgba(255, 152, 0, 0.3) !important;
+            }
+
+            /* Sidebar Scrollbar Styling */
+            aside::-webkit-scrollbar,
+            .sidebar::-webkit-scrollbar {
+                width: 8px !important;
+            }
+
+            aside::-webkit-scrollbar-track,
+            .sidebar::-webkit-scrollbar-track {
+                background: rgba(0, 0, 0, 0.2) !important;
+                border-radius: 10px !important;
+                margin: 10px 0 !important;
+            }
+
+            aside::-webkit-scrollbar-thumb,
+            .sidebar::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.4) !important;
+                border-radius: 10px !important;
+                border: 2px solid transparent !important;
+            }
+
+            aside::-webkit-scrollbar-thumb:hover,
+            .sidebar::-webkit-scrollbar-thumb:hover {
+                background: rgba(255, 255, 255, 0.6) !important;
+            }
+
+            /* ============================================================
+            HOTSPOT CLUSTERING TEXT VISIBILITY
+            ============================================================ */
+
+            /* Main paragraph text in cards */
+            .card p,
+            .card .small,
+            .card li {
+                color: rgba(255, 255, 255, 0.85) !important;
+            }
+
+            /* Specific fix for cluster configuration card */
+            .card h6.fw-bold {
+                color: #FFC107 !important;
+                text-shadow: 0 2px 8px rgba(255, 193, 7, 0.4) !important;
+                margin-bottom: 12px !important;
+            }
+
+            .card ul li {
+                color: rgba(255, 255, 255, 0.8) !important;
+                margin-bottom: 8px !important;
+                line-height: 1.6 !important;
+            }
+
+            .card ul li strong {
+                color: #FF9800 !important;
+                font-weight: 700 !important;
+            }
+
+            /* Slider labels in cards */
+            .card .form-group label,
+            .card .control-label {
+                color: rgba(255, 255, 255, 0.9) !important;
+                font-weight: 600 !important;
+            }
+            
+            /* ============================================================
+            SEVERITY PREDICTOR - FORM CONTROLS FIX
+            ============================================================ */
+
+            /* Select dropdowns in predictor */
+            .pred-container select,
+            .pred-container .form-select,
+            .input-card select,
+            .input-card .form-select {
+                background: rgba(255, 255, 255, 0.12) !important;
+                border: 2px solid rgba(255, 152, 0, 0.4) !important;
+                color: #fff !important;
+                border-radius: 10px !important;
+                padding: 10px 15px !important;
+                font-weight: 500 !important;
+            }
+
+            /* Dropdown options */
+            .pred-container select option,
+            .input-card select option {
+                background: #2d1b1b !important;
+                color: #fff !important;
+                padding: 10px !important;
+            }
+
+            .pred-container select option:hover,
+            .input-card select option:hover {
+                background: #3d2020 !important;
+            }
+
+            /* Number inputs */
+            .pred-container input[type="number"],
+            .input-card input[type="number"] {
+                background: rgba(255, 255, 255, 0.12) !important;
+                border: 2px solid rgba(255, 152, 0, 0.4) !important;
+                color: #fff !important;
+                border-radius: 10px !important;
+                padding: 10px 15px !important;
+            }
+
+            .pred-container input[type="number"]:focus,
+            .input-card input[type="number"]:focus {
+                border-color: #FF9800 !important;
+                box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2) !important;
+            }
+
+            /* Switch labels */
+            .pred-container .form-check-label,
+            .input-card .form-check-label {
+                color: rgba(255, 255, 255, 0.9) !important;
+                font-weight: 500 !important;
+            }
+            
     """)),
     # --- Main Header Area with About Button ---
     ui.div(
@@ -881,8 +1290,16 @@ def server(input, output, session):
     
     
 
-    # Reactive calculation for filtered data
+    # Reactive calculation for filtered data - ADD DEBOUNCING
     @reactive.calc
+    @reactive.event(
+        input.filter_year,
+        input.filter_severity,
+        input.filter_weather,
+        input.filter_hour,
+        input.reset_btn,
+        ignore_none=True
+    )
     def filtered_df() -> pd.DataFrame:
         # Start with full dataset
         data: pd.DataFrame = df.copy()
@@ -943,7 +1360,7 @@ def server(input, output, session):
                             ui.p("University of Southeastern Philippines", class_="small text-muted mb-0"),
                             ui.p("College of Information and Computing", class_="small text-muted mb-0"),
                             ui.p("BS Computer Science - Major in Data Science", class_="small text-muted mb-0"),
-                            ui.p("CSDS 313 Business Intelligence [AY 2025-2026]", class_="small text-muted"),
+                            ui.p("CSDS 312 Applied Data Science [BSCS 3, AY 2025-2026]", class_="small text-muted"),
                             class_="author-body"
                         ),
                         class_="author-card"
@@ -957,7 +1374,7 @@ def server(input, output, session):
                             ui.p("University of Southeastern Philippines", class_="small text-muted mb-0"),
                             ui.p("College of Information and Computing", class_="small text-muted mb-0"),
                             ui.p("BS Computer Science - Major in Data Science", class_="small text-muted mb-0"),
-                            ui.p("CSDS 313 Business Intelligence [AY 2025-2026]", class_="small text-muted"),
+                            ui.p("CSDS 312 Applied Data Science [BSCS 3, AY 2025-2026]", class_="small text-muted"),
                             class_="author-body"
                         ),
                         class_="author-card"
@@ -971,7 +1388,7 @@ def server(input, output, session):
                             ui.p("University of Southeastern Philippines", class_="small text-muted mb-0"),
                             ui.p("College of Information and Computing", class_="small text-muted mb-0"),
                             ui.p("BS Computer Science - Major in Data Science", class_="small text-muted mb-0"),
-                            ui.p("CSDS 313 Business Intelligence [AY 2025-2026]", class_="small text-muted"),
+                            ui.p("CSDS 312 Applied Data Science [BSCS 3, AY 2025-2026]", class_="small text-muted"),
                             class_="author-body"
                         ),
                         class_="author-card"
@@ -1099,7 +1516,10 @@ def server(input, output, session):
             mapbox_style="carto-positron", # Clean white style
             title="Accident Locations (Sampled)"
         )
-        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+        fig.update_layout(
+            margin={"r":0,"t":0,"l":0,"b":0},
+            uirevision='constant'
+        )
         return fig
 
     @render_widget # type: ignore
@@ -1254,7 +1674,8 @@ def server(input, output, session):
             ),
             margin=dict(l=20, r=20, t=30, b=20),
             height=400, 
-            hovermode="x unified"
+            hovermode="x unified",
+            uirevision='constant' 
         )
         return fig
 
@@ -1319,7 +1740,8 @@ def server(input, output, session):
             ),
             margin=dict(l=20, r=20, t=30, b=20),
             height=400, # Matches the height of the row
-            hovermode="x unified"
+            hovermode="x unified",
+            uirevision='constant' 
         )
         return fig
 
@@ -1484,7 +1906,8 @@ def server(input, output, session):
                 tickfont=dict(color='#666')
             ),
             margin=dict(l=20, r=20, t=80, b=20),
-            hovermode="x unified"
+            hovermode="x unified",
+            uirevision='constant' 
         )
         
         return fig
@@ -1585,7 +2008,8 @@ def server(input, output, session):
             ),
             margin=dict(l=20, r=80, t=20, b=20),
             height=400,
-            hovermode="y unified"
+            hovermode="y unified",
+            uirevision='constant' 
         )
         
         return fig
@@ -1658,7 +2082,8 @@ def server(input, output, session):
                 borderwidth=1,
                 # Ensure the items are stacked vertically in the sorted order
                 traceorder="normal"
-            )
+            ),
+            uirevision='constant' 
         )
         return fig
 
@@ -1666,4 +2091,4 @@ static_dir = os.path.join(os.path.dirname(__file__), "assets")
 # Run the App
 app = App(app_ui, server, static_assets=static_dir)
 
-# version 2.0
+# version 2.1
