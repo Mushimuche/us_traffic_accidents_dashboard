@@ -9,66 +9,88 @@ from sklearn.cluster import KMeans
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
-
+import joblib 
 from typing import Any, cast 
 
 # =============================================================================
-# 0. GLOBAL MODEL TRAINING (Runs once on startup)
+# 0. GLOBAL MODEL TRAINING (Smart Loading)
 # =============================================================================
 
 print("Initializing Prediction Model...")
 rf_model: Any = None 
 le_weather = LabelEncoder()
-unique_weather_options = ["Clear", "Rain", "Snow", "Fog", "Overcast"] # Default fallback
+unique_weather_options = ["Clear", "Rain", "Snow", "Fog", "Overcast"] 
 
-# [CHANGE] Exact filename from your screenshot
+# Files
 training_file_path = "us_accidents_ca_balanced.csv"
+model_save_path = "accident_model_data.joblib" # File to store the trained brain
 
-try:
-    if os.path.exists(training_file_path):
-        print(f"Loading balanced training data from: {training_file_path}")
+# 1. Try to Load Existing Model
+if os.path.exists(model_save_path):
+    try:
+        print(f"Found saved model: {model_save_path}. Loading...")
+        saved_data = joblib.load(model_save_path)
         
-        # Load necessary columns for training
-        train_cols = ['Severity', 'Start_Time', 'Weather_Condition', 'Temperature(F)', 
-                    'Humidity(%)', 'Traffic_Signal', 'Junction', 'Crossing']
+        # Restore Model and Encoder
+        rf_model = saved_data['model']
+        le_weather = saved_data['encoder']
         
-        # [CHANGE] Read the balanced dataset
-        # Your screenshot shows ~17k rows. We use the full dataset here for maximum accuracy.
-        df_train = pd.read_csv(training_file_path, usecols=lambda c: c in train_cols)
-        
-        # Preprocessing
-        df_train['Start_Time'] = pd.to_datetime(df_train['Start_Time'], errors='coerce')
-        df_train['Hour'] = df_train['Start_Time'].dt.hour
-        
-        # Handle Missing Values (Imputation specific to the balanced set)
-        df_train['Weather_Condition'] = df_train['Weather_Condition'].fillna('Clear')
-        # Use median for numerical columns to handle outliers better
-        df_train['Temperature(F)'] = df_train['Temperature(F)'].fillna(df_train['Temperature(F)'].median())
-        df_train['Humidity(%)'] = df_train['Humidity(%)'].fillna(df_train['Humidity(%)'].median())
-        
-        # Encode Weather
-        df_train['Weather_Encoded'] = le_weather.fit_transform(df_train['Weather_Condition'].astype(str))
-        
-        # Update dropdown options based on what the model learned from the balanced data
+        # Restore Weather Options
         weather_classes = getattr(le_weather, 'classes_', [])
         unique_weather_options = sorted([str(x) for x in weather_classes])
+        print("Model Loaded Successfully from file.")
         
-        # Features & Target
-        X = df_train[['Hour', 'Weather_Encoded', 'Temperature(F)', 'Humidity(%)', 
-                    'Traffic_Signal', 'Junction', 'Crossing']]
-        y = df_train['Severity']
-        
-        # Train Model
-        # [CHANGE] Increased n_estimators to 100 since we have a clean, balanced dataset
-        rf_model = RandomForestClassifier(n_estimators=100, max_depth=12, random_state=42)
-        rf_model.fit(X, y)
-        print(f"Prediction Model Trained Successfully using {len(df_train)} balanced records.")
-        
-    else:
-        print(f"Warning: '{training_file_path}' not found. Prediction model will not work.")
+    except Exception as e:
+        print(f"Error loading saved model: {e}. Retraining...")
+        # If load fails, force training logic below by removing file
+        if os.path.exists(model_save_path):
+            os.remove(model_save_path)
 
-except Exception as e:
-    print(f"Model training failed: {e}")
+# 2. Train if Model NOT Loaded
+if rf_model is None:
+    try:
+        if os.path.exists(training_file_path):
+            print(f"Training new model from: {training_file_path}")
+            
+            # Load Data
+            train_cols = ['Severity', 'Start_Time', 'Weather_Condition', 'Temperature(F)', 
+                        'Humidity(%)', 'Traffic_Signal', 'Junction', 'Crossing']
+            df_train = pd.read_csv(training_file_path, usecols=lambda c: c in train_cols)
+            
+            # Preprocessing
+            df_train['Start_Time'] = pd.to_datetime(df_train['Start_Time'], errors='coerce')
+            df_train['Hour'] = df_train['Start_Time'].dt.hour
+            
+            # Imputation
+            df_train['Weather_Condition'] = df_train['Weather_Condition'].fillna('Clear')
+            df_train['Temperature(F)'] = df_train['Temperature(F)'].fillna(df_train['Temperature(F)'].median())
+            df_train['Humidity(%)'] = df_train['Humidity(%)'].fillna(df_train['Humidity(%)'].median())
+            
+            # Encoding
+            df_train['Weather_Encoded'] = le_weather.fit_transform(df_train['Weather_Condition'].astype(str))
+            
+            # Update Options
+            weather_classes = getattr(le_weather, 'classes_', [])
+            unique_weather_options = sorted([str(x) for x in weather_classes])
+            
+            # Features & Target
+            X = df_train[['Hour', 'Weather_Encoded', 'Temperature(F)', 'Humidity(%)', 
+                        'Traffic_Signal', 'Junction', 'Crossing']]
+            y = df_train['Severity']
+            
+            # Train
+            rf_model = RandomForestClassifier(n_estimators=100, max_depth=12, random_state=42)
+            rf_model.fit(X, y)
+            print(f"Model Trained. Saving to {model_save_path}...")
+            
+            # [CHANGE] Save the Model AND the Encoder for next time
+            joblib.dump({'model': rf_model, 'encoder': le_weather}, model_save_path)
+            
+        else:
+            print(f"Warning: '{training_file_path}' not found. Prediction model will not work.")
+
+    except Exception as e:
+        print(f"Model training failed: {e}")
 
 # =============================================================================
 # 1. DATA LOADING & PREPROCESSING
