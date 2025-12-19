@@ -4,6 +4,4 @@ pandas
 plotly
 faicons
 scikit-learn
-typing
 polars
-time
