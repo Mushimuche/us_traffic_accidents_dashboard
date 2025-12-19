@@ -235,6 +235,12 @@ app_ui = ui.page_sidebar(
             VALUE BOXES (KPIs)
             ============================================================ */
 
+            /* [CHANGE] Force all icons inside value boxes to be white */
+            .bslib-value-box .value-box-showcase svg {
+                fill: white !important;
+                color: white !important;
+            }
+
             .value-box-area { 
                 padding: 15px; 
             }
@@ -349,6 +355,17 @@ app_ui = ui.page_sidebar(
                 background: linear-gradient(135deg, #FF5722 0%, #FF9800 100%) !important;
                 border: none !important;
                 box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4) !important;
+            }
+
+            /* [CHANGE] Remove padding from card bodies to maximize chart size */
+            .card .card-body {
+                padding: 0 !important;
+                overflow: hidden !important; /* Ensures charts don't spill out */
+            }
+            
+            /* Optional: Add slight padding only to the Predictor tab text area so it doesn't touch edges */
+            .pred-container .result-card {
+                padding: 20px !important;
             }
 
             /* ============================================================
@@ -487,7 +504,8 @@ app_ui = ui.page_sidebar(
             .bslib-sidebar-layout > .sidebar,
             div.sidebar {
                 background: linear-gradient(135deg, #D32F2F 0%, #F57C00 50%, #FFA000 100%) !important;
-                border-radius: 25px !important;
+                /* [CHANGE] Removed border-radius to make it look flush with the edge */
+                border-radius: 0 25px 25px 0 !important; 
                 padding: 30px 25px !important;
                 box-shadow: 0 10px 40px rgba(211, 47, 47, 0.4),
                             inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
@@ -495,8 +513,8 @@ app_ui = ui.page_sidebar(
                 position: relative !important;
                 overflow: hidden !important;
 
-                /* NEW: Add these lines */
-                max-height: 90vh !important;
+                /* [CHANGE] Changed max-height to min-height to stretch all the way down */
+                min-height: 100vh !important; 
                 overflow-y: auto !important;
                 overflow-x: hidden !important;
             }
@@ -597,12 +615,12 @@ app_ui = ui.page_sidebar(
                 border-radius: 3px !important;
             }
 
-           /* Checkbox Group - Fixed Width & Overflow */
+           /* Checkbox Group - Fixed Width & WRAPPING Text */
             aside .checkbox label,
             .sidebar .checkbox label {
                 background: rgba(255, 255, 255, 0.2) !important;
                 backdrop-filter: blur(10px) !important;
-                padding: 10px 15px !important;
+                padding: 8px 12px !important; /* Slightly tighter padding */
                 border-radius: 12px !important;
                 transition: all 0.3s ease !important;
                 border: 2px solid transparent !important;
@@ -610,11 +628,17 @@ app_ui = ui.page_sidebar(
                 display: block !important;
                 width: 100% !important;
                 margin-bottom: 8px !important;
-                white-space: nowrap !important;
-                overflow: hidden !important;
-                text-overflow: ellipsis !important;
+                
+                /* [CHANGE] Critical for wrapping without overflow */
+                white-space: normal !important; 
+                overflow: visible !important; 
+                height: auto !important; 
+                min-height: 45px !important; /* Ensures consistency */
+                line-height: 1.1 !important;
+                font-size: 0.9rem !important; /* Slightly smaller text to fit better */
+                display: flex !important;
+                align-items: center !important;
             }
-
             aside .checkbox label:hover,
             .sidebar .checkbox label:hover {
                 background: rgba(255, 255, 255, 0.3) !important;
@@ -826,6 +850,14 @@ app_ui = ui.page_sidebar(
                 border: none !important;
                 color: white !important;
                 font-weight: 600 !important;
+            }
+
+            /* [CHANGE] Fix text colors for titles inside the About Modal */
+            .modal-body .bg-white strong,
+            .modal-body .bg-light strong,
+            .modal-body .bg-light .fw-bold {
+                color: #fff !important; /* Sets text to white */
+                text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Adds a small shadow for readability */
             }
 
             /* ============================================================
@@ -1089,17 +1121,21 @@ app_ui = ui.page_sidebar(
                 # Left Sidebar: Controls & Interpretation
                 ui.card(
                     ui.card_header("Cluster Configuration"),
-                    ui.input_slider("n_clusters", "Number of Zones (K)", min=2, max=10, value=5),
-                    
-                    ui.hr(),
-                    
-                    # New Interpretation Section for Non-Technical Users
-                    ui.h6("How to Read this Map", class_="fw-bold text-primary"),
-                    ui.p("This map uses an algorithm called K-Means to mathematically find 'centers of gravity' for accidents.", class_="small text-muted"),
-                    ui.tags.ul(
-                        ui.tags.li(ui.strong("Colored Zones:"), " Each color represents a distinct geographic cluster of accidents.", class_="small"),
-                        ui.tags.li(ui.strong("Resource Allocation:"), " Agencies can place 1 HQ or Response Team in the center of each color to minimize travel time.", class_="small"),
-                        ui.tags.li(ui.strong("K-Slider:"), " Change the slider to split the state into more specific local zones.", class_="small"),
+                    # [CHANGE] Wrapped content in a div with padding (p-4) and dark background
+                    ui.div(
+                        ui.input_slider("n_clusters", "Number of Zones (K)", min=2, max=10, value=5),
+                        
+                        ui.hr(),
+                        
+                        ui.h6("How to Read this Map", class_="fw-bold text-primary"),
+                        ui.p("This map uses an algorithm called K-Means to mathematically find 'centers of gravity' for accidents.", class_="small text-muted"),
+                        ui.tags.ul(
+                            ui.tags.li(ui.strong("Colored Zones:"), " Each color represents a distinct geographic cluster of accidents.", class_="small"),
+                            ui.tags.li(ui.strong("Resource Allocation:"), " Agencies can place 1 HQ or Response Team in the center of each color to minimize travel time.", class_="small"),
+                            ui.tags.li(ui.strong("K-Slider:"), " Change the slider to split the state into more specific local zones.", class_="small"),
+                        ),
+                        class_="p-4 h-100", # Adds padding back
+                        style="background: #2d1b1b;" # Forces dark background
                     ),
                     height="100%"
                 ),
@@ -1163,26 +1199,25 @@ app_ui = ui.page_sidebar(
 
                     # --- Right Column: Results & Visualization ---
                     ui.column(8,
-                        ui.row(
+                        ui.div(
                             # Top: Large Number Display
-                            ui.column(12,
-                                ui.div(
-                                    ui.span("PREDICTED SEVERITY LEVEL", class_="sev-label"),
-                                    ui.output_ui("prediction_text"), # Note: inline=True to fix spacing
-                                    ui.p("Severity ranges from 1 (Low Impact) to 4 (High Impact)", class_="small text-muted mt-2"),
-                                    class_="result-card p-4 mb-4"
-                                )
+                            ui.div(
+                                ui.span("PREDICTED SEVERITY LEVEL", class_="sev-label"),
+                                ui.output_ui("prediction_text"), 
+                                ui.p("Severity ranges from 1 (Low Impact) to 4 (High Impact)", class_="small text-muted mt-2"),
+                                class_="result-card mb-3" # Reduced mb-4 to mb-3
                             ),
-                            # Bottom: Modern Donut Chart
-                            ui.column(12,
-                                ui.card(
-                                    ui.card_header("Confidence Analysis"),
-                                    output_widget("pred_prob_plot"),
-                                    full_screen=True
-                                )
-                            )
+                            # Bottom: Confidence Chart
+                            ui.card(
+                                ui.card_header("Confidence Analysis"),
+                                # [CHANGE] Increased height to 400px to make it big
+                                output_widget("pred_prob_plot", height="400px"), 
+                                full_screen=False,
+                                class_="h-100"
+                            ),
                         )
                     )
+
                 ),
                 class_="pred-container" # Applies the gradient background
             )
@@ -1264,38 +1299,46 @@ def server(input, output, session):
         probs = pred_probs.get()
         
         if probs is None or rf_model is None:
-            # Return an empty placeholder plot with instruction
+            # Placeholder with dark theme styling
             fig = go.Figure()
             fig.update_layout(
                 xaxis={'visible': False}, yaxis={'visible': False}, 
-                annotations=[{'text': "Adjust inputs and click Analyze", 'showarrow': False, 'font': {'size': 20, 'color': '#ccc'}}]
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                annotations=[{'text': "Adjust inputs and click Analyze", 'showarrow': False, 'font': {'size': 20, 'color': 'rgba(255,255,255,0.5)'}}]
             )
             return go.FigureWidget(fig)
         
         classes = rf_model.classes_
         
-        # Create a Modern Donut Chart
         # Colors: Green(1), Yellow(2), Orange(3), Red(4)
         colors = ['#00b894', '#fdcb6e', '#e17055', '#d63031']
         
         fig = go.Figure(data=[go.Pie(
             labels=[f"Severity {c}" for c in classes],
             values=probs,
-            hole=.6, # Makes it a donut
-            marker=dict(colors=colors[:len(classes)]),
+            hole=.65, # Slightly thinner donut
+            marker=dict(colors=colors[:len(classes)], line=dict(color='#2d1b1b', width=4)), # Dark border to blend with background
             textinfo='label+percent',
             textposition='outside',
             hoverinfo='label+percent+value',
-            pull=[0.1 if p == max(probs) else 0 for p in probs] # Slightly pull out the winning slice
+            textfont=dict(color='white', size=13), # White text for labels
+            pull=[0.05 if p == max(probs) else 0 for p in probs]
         )])
         
-        # Add the "Winning" % in the center of the donut
+        # Add the "Winning" % in the center
         max_prob = max(probs)
+        # [CHANGE] Larger height and centered
         fig.update_layout(
             showlegend=False,
-            margin=dict(t=20, b=20, l=20, r=20),
-            height=300,
-            annotations=[dict(text=f"{max_prob*100:.0f}%<br>Conf.", x=0.5, y=0.5, font_size=20, showarrow=False)]
+            margin=dict(t=10, b=10, l=10, r=10), # Minimal margins to maximize size
+            height=400, # Matches the UI height
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            annotations=[dict(
+                text=f"<span style='font-size:40px; font-weight:bold; color:white;'>{max_prob*100:.0f}%</span><br><span style='font-size:16px; color:#ccc;'>CONFIDENCE</span>", 
+                x=0.5, y=0.5, showarrow=False
+            )]
         )
         
         return go.FigureWidget(fig)
@@ -1583,14 +1626,15 @@ def server(input, output, session):
         # 3. Customizing the "Flower" Look
         fig.update_layout(
             title="",
-            margin=dict(t=20, b=20, l=40, r=80), # Increased right margin for wider legend
-            height=380,
+            margin=dict(t=20, b=20, l=20, r=20), 
+            height=None,  # Remove fixed height
+            autosize=True,  # Enable auto-sizing
             showlegend=True,
             legend=dict(
                 title=dict(text="Feature", font=dict(size=12, weight="bold")),
                 orientation="v", 
                 yanchor="middle", y=0.5, 
-                xanchor="left", x=0.95, # Move legend further right
+                xanchor="left", x=0.95,
                 font=dict(size=11)
             ),
             polar=dict(
@@ -1675,17 +1719,20 @@ def server(input, output, session):
                 title=dict(text="Day of Week", font=dict(size=13, color='#777')),
                 showgrid=False,
                 linecolor='#e0e0e0',
-                tickfont=dict(color='#555')
+                tickfont=dict(color='#555'),
+                automargin=True
             ),
             yaxis=dict(
                 title=dict(text="Accident Cases", font=dict(size=13, color='#777')),
                 showgrid=True,
                 gridcolor='#f9f9f9',
                 zeroline=False,
-                tickfont=dict(color='#666')
+                tickfont=dict(color='#666'),
+                automargin=True
             ),
-            margin=dict(l=20, r=20, t=30, b=20),
-            height=400, 
+            margin=dict(l=10, r=10, t=20, b=10), 
+            height=None,  # Remove fixed height
+            autosize=True,  # Enable auto-sizing
             hovermode="x unified",
             uirevision='constant' 
         )
@@ -1741,17 +1788,20 @@ def server(input, output, session):
                 title=dict(text="Month", font=dict(size=13, color='#777')),
                 showgrid=False,
                 linecolor='#e0e0e0',
-                tickfont=dict(color='#555')
+                tickfont=dict(color='#555'),
+                automargin=True
             ),
             yaxis=dict(
                 title=dict(text="Accident Cases", font=dict(size=13, color='#777')),
                 showgrid=True,
                 gridcolor='#f9f9f9',
                 zeroline=False,
-                tickfont=dict(color='#666')
+                tickfont=dict(color='#666'),
+                automargin=True
             ),
-            margin=dict(l=20, r=20, t=30, b=20),
-            height=400, # Matches the height of the row
+            margin=dict(l=10, r=10, t=20, b=10),
+            height=None,  # Remove fixed height
+            autosize=True,  # Enable auto-sizing
             hovermode="x unified",
             uirevision='constant' 
         )
@@ -1888,11 +1938,10 @@ def server(input, output, session):
 
         # 5. Aesthetic Layout
         fig.update_layout(
-            autosize=True, 
+            autosize=True,  # Enable auto-sizing
             title="",
             plot_bgcolor='white',
             paper_bgcolor='white',
-            # Important: Overlay allows the peak bars to sit ON TOP of the main bars
             barmode='overlay', 
             legend=dict(
                 orientation="h", 
@@ -1908,16 +1957,19 @@ def server(input, output, session):
                 title=dict(text="Hour of Day", font=dict(size=12, color='#777')),
                 showgrid=False,
                 linecolor='#e0e0e0',
-                tickfont=dict(color='#666')
+                tickfont=dict(color='#666'),
+                automargin=True
             ),
             yaxis=dict(
                 title=dict(text="Number of Accidents", font=dict(size=12, color='#777')),
                 showgrid=True,
                 gridcolor='#f9f9f9',
                 zeroline=False,
-                tickfont=dict(color='#666')
+                tickfont=dict(color='#666'),
+                automargin=True
             ),
-            margin=dict(l=20, r=20, t=80, b=20),
+            margin=dict(l=10, r=10, t=50, b=10),
+            height=None,  # Remove fixed height
             hovermode="x unified",
             uirevision='constant' 
         )
@@ -2011,15 +2063,18 @@ def server(input, output, session):
                 showgrid=True,
                 gridcolor='#f5f5f5',
                 zeroline=False,
-                tickfont=dict(color='#666')
+                tickfont=dict(color='#666'),
+                automargin=True
             ),
             yaxis=dict(
                 title=dict(text="Weather Condition", font=dict(size=12, color='#777')),
                 showgrid=False,
-                tickfont=dict(color='#555', size=10)
+                tickfont=dict(color='#555', size=10),
+                automargin=True
             ),
-            margin=dict(l=20, r=80, t=20, b=20),
-            height=400,
+            margin=dict(l=10, r=0, t=20, b=10),
+            height=None,  # Remove fixed height
+            autosize=True,  # Enable auto-sizing
             hovermode="y unified",
             uirevision='constant' 
         )
