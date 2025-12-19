@@ -136,7 +136,7 @@ app_ui = ui.page_sidebar(
     ui.sidebar(
         
         ui.h4("Filters", class_="mb-3"),
-        ui.p("Apply filters to Map and Time Analysis tab", class_="small text-muted"),
+        ui.p("Apply filters to Analytics tab", class_="small text-muted"),
 
         ui.hr(),
         
@@ -1020,14 +1020,27 @@ app_ui = ui.page_sidebar(
             }
             
     """)),
-    # --- Main Header Area with About Button ---
+    # --- Main Header Area with Narrative & About Buttons ---
     ui.div(
         ui.h2("California Road Accidents Dashboard", class_="mb-0"),
-        ui.input_action_button(
-            "about_btn", 
-            "About", 
-            icon=fa.icon_svg("circle-info"), 
-            class_="btn-about"
+        
+        # Container for buttons
+        ui.div(
+            # [NEW] Narrative Button
+            ui.input_action_button(
+                "narrative_btn", 
+                "Narrative", 
+                icon=fa.icon_svg("book-open"), 
+                class_="btn-about me-2" # Reusing btn-about style, me-2 adds spacing
+            ),
+            # Existing About Button
+            ui.input_action_button(
+                "about_btn", 
+                "About", 
+                icon=fa.icon_svg("circle-info"), 
+                class_="btn-about"
+            ),
+            class_="d-flex" # Aligns buttons horizontally
         ),
         class_="d-flex justify-content-between align-items-center mb-3 mt-2"
     ),
@@ -1067,7 +1080,7 @@ app_ui = ui.page_sidebar(
         
         # TAB 1: Map and Time Analysis
         ui.nav_panel(
-            "Map and Time Analysis",
+            "Analytics",
             
             # Row 1: Map (Left) and POI Pies (Right)
             ui.layout_columns(
@@ -1396,6 +1409,84 @@ def server(input, output, session):
                 data = cast(pd.DataFrame, data[mask])
         
         return data
+
+    # --- NARRATIVE MODAL LOGIC ---
+    @reactive.effect
+    @reactive.event(input.narrative_btn)
+    def show_narrative_modal():
+        m = ui.modal(
+            ui.div(
+                ui.h4("Descriptive Narrative", class_="mb-3"),
+                
+                # Content Container
+                ui.div(
+                    # Context Section
+                    ui.h5("1. Context", class_="fw-bold text-primary"),
+                    ui.p(
+                        ui.strong("Problem & Data:"), 
+                        " This project aims to transition traffic safety from reactive reporting to proactive planning using the US-Accidents dataset (2016–2023). We aim to answer two key questions: Where and when should resources be deployed? and Can we predict the severity of an accident before it escalates? The scope is limited to California, utilizing real-time API data aggregated from traffic sensors and law enforcement.",
+                        class_="text-muted mb-2"
+                    ),
+                    ui.p(
+                        ui.strong("Preprocessing:"), 
+                        " Two pipelines were established. A 'ground-truth' dataset (~880k records) was cleaned for visualization to reflect natural distributions. A second 'balanced' dataset was created via undersampling to resolve class imbalance, ensuring the machine learning model did not bias toward the majority class (minor accidents).",
+                        class_="text-muted mb-2"
+                    ),
+                    ui.p(
+                        ui.strong("Modeling:"), 
+                        " We deployed K-Means Clustering for geospatial hotspot detection (unsupervised learning) and a Random Forest Classifier (supervised learning) to predict accident severity based on environmental features.",
+                        class_="text-muted"
+                    ),
+                    
+                    ui.hr(),
+                    
+                    # Findings Section
+                    ui.h5("2. Findings", class_="fw-bold text-primary"),
+                    ui.tags.ul(
+                        ui.tags.li(
+                            ui.strong("Temporal Trends:"), 
+                            " Accident volume exhibits strong seasonality, peaking in December (~100k cases) and on Fridays (~120k cases). The most critical daily window is the evening rush hour (17:00)."
+                        ),
+                        ui.tags.li(
+                            ui.strong("Environmental Factors:"), 
+                            " Counter-intuitively, 63.36% of accidents occur during 'Fair' weather, suggesting driver volume outweighs adverse conditions. Infrastructure-wise, Junctions (9.17%) and Traffic Signals (6.71%) are the highest-risk road features."
+                        ),
+                        ui.tags.li(
+                            ui.strong("Predictive Insight:"), 
+                            " The Random Forest model indicates that time is a critical predictor; a simulation at 17:00 in clear conditions still predicts a Severity 3 (Serious) outcome with 54.1% confidence."
+                        ),
+                        class_="text-muted"
+                    ),
+                    
+                    ui.hr(),
+                    
+                    # Recommendations Section
+                    ui.h5("3. Recommendations", class_="fw-bold text-primary"),
+                    ui.tags.ul(
+                        ui.tags.li(
+                            ui.strong("Strategic Allocation:"), 
+                            " Agencies should utilize the dashboard's K-Means Hotspot Clustering to position emergency units at the calculated 'centers of gravity' within the 5 zones to mathematically minimize response times."
+                        ),
+                        ui.tags.li(
+                            ui.strong("Targeted Enforcement:"), 
+                            " Patrol scheduling should be heavily weighted toward Fridays, December, and the 17:00 window to address the highest frequency periods identified in the analysis."
+                        ),
+                        ui.tags.li(
+                            ui.strong("Proactive Risk Modeling:"), 
+                            " Planners should use the Severity Predictor to simulate potential accident outcomes based on forecasted weather and road infrastructure projects, allowing for data-driven preparation before incidents occur."
+                        ),
+                        class_="text-muted"
+                    ),
+                    
+                    class_="p-4 bg-light border rounded"
+                )
+            ),
+            title="Project Analysis",
+            size="xl",
+            easy_close=True,
+            footer=ui.modal_button("Close")
+        )
+        ui.modal_show(m)
 
     # --- ABOUT MODAL LOGIC ---
     @reactive.effect
